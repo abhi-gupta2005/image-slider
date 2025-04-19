@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Image Slider</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="slider-container">
+    <div class="slider">
+      <div class="slide active">
+        <img src="https://source.unsplash.com/random/800x400?nature,1" alt="Nature 1">
+        <div class="caption">Beautiful Mountain View</div>
+      </div>
+      <div class="slide">
+        <img src="https://source.unsplash.com/random/800x400?nature,2" alt="Nature 2">
+        <div class="caption">Serene Lake Sunset</div>
+      </div>
+      <div class="slide">
+        <img src="https://source.unsplash.com/random/800x400?nature,3" alt="Nature 3">
+        <div class="caption">Lush Forest Trail</div>
+      </div>
+    </div>
+    <button class="prev">&#10094;</button>
+    <button class="next">&#10095;</button>
+    <div class="thumbnails">
+      <img src="https://source.unsplash.com/random/100x50?nature,1" data-index="0" class="thumb active">
+      <img src="https://source.unsplash.com/random/100x50?nature,2" data-index="1" class="thumb">
+      <img src="https://source.unsplash.com/random/100x50?nature,3" data-index="2" class="thumb">
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
