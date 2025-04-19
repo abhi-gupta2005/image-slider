@@ -4,12 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Enhanced Image Slider</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: sans-serif;
       background: #f0f0f0;
       display: flex;
       justify-content: center;
@@ -59,25 +58,24 @@
     }
     .prev { left: 10px; }
     .next { right: 10px; }
+
     .caption {
       position: absolute;
       bottom: 0;
       width: 100%;
-      padding: 25px 30px;
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3em;
-      line-height: 1.6;
-      background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.6);
       color: #fff;
-      backdrop-filter: blur(4px);
-      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+      font-size: 1.1em;
+      line-height: 1.5;
       min-height: 100px;
-      opacity: 0;
-      transition: opacity 1s ease-in-out;
     }
-    .caption.show {
-      opacity: 1;
+
+    .caption span {
+      display: inline;
+      white-space: pre-wrap;
     }
+
     .thumbnails {
       display: flex;
       justify-content: center;
@@ -122,6 +120,13 @@
       transition: width 5s linear;
     }
     audio { display: none; }
+
+    @media (max-width: 600px) {
+      .nav {
+        font-size: 1.5em;
+        padding: 8px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -132,21 +137,32 @@
     </div>
     <button class="nav prev" id="prevBtn">&#10094;</button>
     <button class="nav next" id="nextBtn">&#10095;</button>
-    <div class="caption" id="caption"></div>
+    <div class="caption"><span id="caption"></span></div>
   </div>
   <div class="controls">
     <button class="btn" id="togglePlay">Pause</button>
     <button class="btn" id="toggleMusic">Mute Music</button>
   </div>
   <div class="thumbnails" id="thumbnails"></div>
+
   <audio id="bgMusic" loop autoplay>
-    <source src="peace.mp3" type="audio/mpeg">
+    <source src="https://raw.githubusercontent.com/abhi-gupta2005/image-slider/main/peace.mp3" type="audio/mpeg">
   </audio>
+
   <script>
     const data = [
-      { src: '1.jpg', caption: 'Majestic mountains rise into the sky, crowned with mist and glory.' },
-      { src: '2.jpg', caption: 'Still waters reflect the golden light of a tranquil dawn.' },
-      { src: '3.jpg', caption: 'Timeless ruins whisper stories of battles and kings long past.' }
+      {
+        src: 'https://raw.githubusercontent.com/abhi-gupta2005/image-slider/main/Majestic%20Mountain%20View.jpg',
+        caption: 'A breathtaking view of a majestic mountain range under a golden sunset, inspiring awe and tranquility.'
+      },
+      {
+        src: 'https://raw.githubusercontent.com/abhi-gupta2005/image-slider/main/Tranquil%20Lake%20Reflection.jpg',
+        caption: 'A peaceful lake reflecting the clear sky and surrounding trees — nature’s perfect mirror of calm.'
+      },
+      {
+        src: 'https://raw.githubusercontent.com/abhi-gupta2005/image-slider/main/Historic%20Castle%20Ruins.jpg',
+        caption: 'Ancient castle ruins standing tall on a foggy hillside, whispering stories of a long-forgotten past.'
+      }
     ];
 
     const slider = document.getElementById("slider");
@@ -183,6 +199,19 @@
       typeWriterText(data[0].caption);
     }
 
+    function typeWriterText(text) {
+      captionEl.textContent = "";
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          captionEl.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, 30);
+        }
+      }
+      type();
+    }
+
     function updateSlider(i) {
       slides.forEach((slide, idx) => {
         slide.classList.remove("active");
@@ -190,27 +219,8 @@
       });
       slides[i].classList.add("active");
       thumbnails[i].classList.add("active");
-      const text = slides[i].dataset.caption;
-      typeWriterText(text);
+      typeWriterText(data[i].caption);
       resetProgressBar();
-    }
-
-    function typeWriterText(text) {
-      captionEl.classList.remove("show");
-      captionEl.textContent = "";
-      setTimeout(() => {
-        captionEl.classList.add("show");
-        const words = text.split(" ");
-        let i = 0;
-        function type() {
-          if (i < words.length) {
-            captionEl.textContent += words[i] + " ";
-            i++;
-            setTimeout(type, 100);
-          }
-        }
-        type();
-      }, 300);
     }
 
     function nextSlide() {
