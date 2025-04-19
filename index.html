@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Enhanced Image Slider</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background: #f0f0f0;
       display: flex;
       justify-content: center;
@@ -34,6 +35,7 @@
       position: absolute;
       width: 100%;
       height: 100%;
+      object-fit: cover;
       opacity: 0;
       transition: opacity 1s ease-in-out, transform 1s ease-in-out;
       transform: scale(1.05);
@@ -58,10 +60,23 @@
     .prev { left: 10px; }
     .next { right: 10px; }
     .caption {
-      text-align: center;
-      font-size: 1.2em;
-      padding: 15px;
-      background-color: #fff;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      padding: 25px 30px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3em;
+      line-height: 1.6;
+      background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
+      color: #fff;
+      backdrop-filter: blur(4px);
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+      min-height: 100px;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+    .caption.show {
+      opacity: 1;
     }
     .thumbnails {
       display: flex;
@@ -107,12 +122,6 @@
       transition: width 5s linear;
     }
     audio { display: none; }
-    @media (max-width: 600px) {
-      .nav {
-        font-size: 1.5em;
-        padding: 8px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -131,17 +140,17 @@
   </div>
   <div class="thumbnails" id="thumbnails"></div>
   <audio id="bgMusic" loop autoplay>
-  <source src="https://raw.githubusercontent.com/abhi-gupta2005/image-slider/main/peace.mp3" type="audio/mpeg">
-</audio>
+    <source src="peace.mp3" type="audio/mpeg">
+  </audio>
   <script>
     const data = [
-  { src: 'https://raw.githubusercontent.com/abhi-gupta2005/image-slider/main/Majestic%20Mountain%20View.jpg', caption: 'Majestic Mountain View' },
-  { src: 'https://raw.githubusercontent.com/abhi-gupta2005/image-slider/main/Tranquil%20Lake%20Reflection.jpg', caption: 'Tranquil Lake Reflection' },
-  { src: 'https://raw.githubusercontent.com/abhi-gupta2005/image-slider/main/Historic%20Castle%20Ruins.jpg', caption: 'Historic Castle Ruins' },
-];
+      { src: '1.jpg', caption: 'Majestic mountains rise into the sky, crowned with mist and glory.' },
+      { src: '2.jpg', caption: 'Still waters reflect the golden light of a tranquil dawn.' },
+      { src: '3.jpg', caption: 'Timeless ruins whisper stories of battles and kings long past.' }
+    ];
 
     const slider = document.getElementById("slider");
-    const caption = document.getElementById("caption");
+    const captionEl = document.getElementById("caption");
     const thumbnailsContainer = document.getElementById("thumbnails");
     const progressBar = document.getElementById("progressBar");
     const togglePlayBtn = document.getElementById("togglePlay");
@@ -171,7 +180,7 @@
         thumbnailsContainer.appendChild(thumb);
         thumbnails.push(thumb);
       });
-      caption.textContent = data[0].caption;
+      typeWriterText(data[0].caption);
     }
 
     function updateSlider(i) {
@@ -181,8 +190,27 @@
       });
       slides[i].classList.add("active");
       thumbnails[i].classList.add("active");
-      caption.textContent = slides[i].dataset.caption;
+      const text = slides[i].dataset.caption;
+      typeWriterText(text);
       resetProgressBar();
+    }
+
+    function typeWriterText(text) {
+      captionEl.classList.remove("show");
+      captionEl.textContent = "";
+      setTimeout(() => {
+        captionEl.classList.add("show");
+        const words = text.split(" ");
+        let i = 0;
+        function type() {
+          if (i < words.length) {
+            captionEl.textContent += words[i] + " ";
+            i++;
+            setTimeout(type, 100);
+          }
+        }
+        type();
+      }, 300);
     }
 
     function nextSlide() {
@@ -252,4 +280,3 @@
   </script>
 </body>
 </html>
-
