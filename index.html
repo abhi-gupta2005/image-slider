@@ -3,33 +3,251 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Advanced Image Slider</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Enhanced Image Slider</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+    .slider-container {
+      position: relative;
+      width: 90%;
+      max-width: 800px;
+      overflow: hidden;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      background: #fff;
+    }
+    .slider {
+      position: relative;
+      height: 500px;
+      cursor: pointer;
+    }
+    .slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+      transform: scale(1.05);
+    }
+    .slide.active {
+      opacity: 1;
+      transform: scale(1);
+      z-index: 1;
+    }
+    .nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      font-size: 2em;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .prev { left: 10px; }
+    .next { right: 10px; }
+    .caption {
+      text-align: center;
+      font-size: 1.2em;
+      padding: 15px;
+      background-color: #fff;
+    }
+    .thumbnails {
+      display: flex;
+      justify-content: center;
+      margin-top: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .thumbnail {
+      width: 100px;
+      height: 60px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 5px;
+    }
+    .thumbnail.active {
+      border-color: #333;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0;
+      gap: 10px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      background-color: #333;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .progress-container {
+      width: 100%;
+      background: #ddd;
+      height: 5px;
+    }
+    .progress-bar {
+      height: 5px;
+      width: 0;
+      background: #333;
+      transition: width 5s linear;
+    }
+    audio { display: none; }
+    @media (max-width: 600px) {
+      .nav {
+        font-size: 1.5em;
+        padding: 8px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="slider-container">
-    <div class="slider">
-      <div class="slide active">
-        <img src="https://source.unsplash.com/random/800x400?nature,1" alt="Nature 1">
-        <div class="caption">Beautiful Mountain View</div>
-      </div>
-      <div class="slide">
-        <img src="https://source.unsplash.com/random/800x400?nature,2" alt="Nature 2">
-        <div class="caption">Serene Lake Sunset</div>
-      </div>
-      <div class="slide">
-        <img src="https://source.unsplash.com/random/800x400?nature,3" alt="Nature 3">
-        <div class="caption">Lush Forest Trail</div>
-      </div>
+    <div class="slider" id="slider"></div>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
     </div>
-    <button class="prev">&#10094;</button>
-    <button class="next">&#10095;</button>
-    <div class="thumbnails">
-      <img src="https://source.unsplash.com/random/100x50?nature,1" data-index="0" class="thumb active">
-      <img src="https://source.unsplash.com/random/100x50?nature,2" data-index="1" class="thumb">
-      <img src="https://source.unsplash.com/random/100x50?nature,3" data-index="2" class="thumb">
-    </div>
+    <button class="nav prev" id="prevBtn">&#10094;</button>
+    <button class="nav next" id="nextBtn">&#10095;</button>
+    <div class="caption" id="caption"></div>
   </div>
-  <script src="script.js"></script>
+  <div class="controls">
+    <button class="btn" id="togglePlay">Pause</button>
+    <button class="btn" id="toggleMusic">Mute Music</button>
+  </div>
+  <div class="thumbnails" id="thumbnails"></div>
+  <audio id="bgMusic" loop autoplay>
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+  <script>
+    const data = [
+      { src: '/Users/abhishekgupta/Downloads/image_slider_project-2/images', caption: 'Majestic Mountain View' },
+      { src: '/Users/abhishekgupta/Downloads/image_slider_project-2/images', caption: 'Tranquil Lake Reflection' },
+      { src: '/Users/abhishekgupta/Downloads/image_slider_project-2/images', caption: 'Historic Castle Ruins' },
+    ];
+    const slider = document.getElementById("slider");
+    const caption = document.getElementById("caption");
+    const thumbnailsContainer = document.getElementById("thumbnails");
+    const progressBar = document.getElementById("progressBar");
+    const togglePlayBtn = document.getElementById("togglePlay");
+    const toggleMusicBtn = document.getElementById("toggleMusic");
+    const bgMusic = document.getElementById("bgMusic");
+
+    let index = 0;
+    let slides = [];
+    let thumbnails = [];
+    let autoplay = true;
+    let timer;
+
+    function createSlides() {
+      data.forEach((item, i) => {
+        const img = document.createElement("img");
+        img.src = item.src;
+        img.alt = item.caption;
+        img.className = "slide" + (i === 0 ? " active" : "");
+        img.dataset.caption = item.caption;
+        slider.appendChild(img);
+        slides.push(img);
+
+        const thumb = document.createElement("img");
+        thumb.src = item.src;
+        thumb.className = "thumbnail" + (i === 0 ? " active" : "");
+        thumb.dataset.index = i;
+        thumbnailsContainer.appendChild(thumb);
+        thumbnails.push(thumb);
+      });
+      caption.textContent = data[0].caption;
+    }
+
+    function updateSlider(i) {
+      slides.forEach((slide, idx) => {
+        slide.classList.remove("active");
+        thumbnails[idx].classList.remove("active");
+      });
+      slides[i].classList.add("active");
+      thumbnails[i].classList.add("active");
+      caption.textContent = slides[i].dataset.caption;
+      resetProgressBar();
+    }
+
+    function nextSlide() {
+      index = (index + 1) % slides.length;
+      updateSlider(index);
+    }
+
+    function prevSlide() {
+      index = (index - 1 + slides.length) % slides.length;
+      updateSlider(index);
+    }
+
+    function resetProgressBar() {
+      progressBar.style.transition = 'none';
+      progressBar.style.width = '0';
+      void progressBar.offsetWidth;
+      progressBar.style.transition = 'width 5s linear';
+      progressBar.style.width = '100%';
+      if (autoplay) {
+        clearTimeout(timer);
+        timer = setTimeout(nextSlide, 5000);
+      }
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", nextSlide);
+    document.getElementById("prevBtn").addEventListener("click", prevSlide);
+
+    togglePlayBtn.addEventListener("click", () => {
+      autoplay = !autoplay;
+      togglePlayBtn.textContent = autoplay ? "Pause" : "Play";
+      if (autoplay) resetProgressBar();
+      else clearTimeout(timer);
+    });
+
+    toggleMusicBtn.addEventListener("click", () => {
+      bgMusic.muted = !bgMusic.muted;
+      toggleMusicBtn.textContent = bgMusic.muted ? "Unmute Music" : "Mute Music";
+    });
+
+    thumbnailsContainer.addEventListener("click", e => {
+      if (e.target.classList.contains("thumbnail")) {
+        index = parseInt(e.target.dataset.index);
+        updateSlider(index);
+      }
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowRight") nextSlide();
+      if (e.key === "ArrowLeft") prevSlide();
+    });
+
+    slider.addEventListener("click", () => {
+      if (!document.fullscreenElement) slider.requestFullscreen();
+      else document.exitFullscreen();
+    });
+
+    slider.addEventListener("touchstart", e => touchStartX = e.changedTouches[0].screenX);
+    slider.addEventListener("touchend", e => {
+      const touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 50) nextSlide();
+      if (touchEndX > touchStartX + 50) prevSlide();
+    });
+
+    let touchStartX = 0;
+    createSlides();
+    resetProgressBar();
+  </script>
 </body>
 </html>
